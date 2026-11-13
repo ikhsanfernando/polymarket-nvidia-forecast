@@ -26,8 +26,14 @@ def table(prices):
     return tab or {1: [0.0] * 5}
 
 
+def clean(prices):
+    """Keep finite numeric prices and clamp each to [0, 1]."""
+    # NaNs break ordering and can contaminate quantiles, so remove them before forecasting.
+    return [min(1.0, max(0.0, p)) for p in prices if isinstance(p, (int, float)) and math.isfinite(p)]
+
+
 def forecast(prices):
-    prices = [p for p in prices if isinstance(p, (int, float)) and math.isfinite(p)]
+    prices = clean(prices)
     if not prices:
         return [[0.45, 0.475, 0.5, 0.525, 0.55] for _ in range(HORIZON)]
     x, tab, keys = prices[-1], table(prices), sorted(table(prices))
